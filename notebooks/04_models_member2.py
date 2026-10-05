@@ -89,7 +89,7 @@ sns.heatmap(
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
 plt.title("Gradient Boosting - Confusion Matrix")
-plt.show()
+plt.close()
 
 
 # In[6]:
@@ -171,7 +171,7 @@ sns.heatmap(
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
 plt.title("LightGBM - Confusion Matrix")
-plt.show()
+plt.close()
 
 
 # In[11]:
@@ -213,7 +213,7 @@ sns.heatmap(
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
 plt.title("KNN - Confusion Matrix")
-plt.show()
+plt.close()
 
 
 # In[13]:
@@ -258,7 +258,7 @@ sns.heatmap(
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
 plt.title("Linear SVM - Confusion Matrix")
-plt.show()
+plt.close()
 
 
 # In[15]:
@@ -300,7 +300,7 @@ sns.heatmap(
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
 plt.title("Decision Tree - Confusion Matrix")
-plt.show()
+plt.close()
 
 
 # In[17]:
@@ -348,7 +348,7 @@ plt.xlabel('Accuracy')
 plt.ylabel('Model')
 plt.title('Model Accuracy Comparison')
 
-plt.show()
+plt.close()
 
 
 # In[19]:
@@ -434,7 +434,7 @@ plt.xlabel("Predicted")
 plt.ylabel("Actual")
 plt.title("Tuned LightGBM - Confusion Matrix")
 
-plt.show()
+plt.close()
 
 
 # In[22]:
