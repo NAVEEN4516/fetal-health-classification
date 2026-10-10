@@ -1,0 +1,11 @@
+Model,Implemented By,Category,Accuracy (%),Macro F1 (%),Weighted F1 (%),Macro Recall (%),Train Time (s)
+LightGBM,Shreya Hegde,Gradient Boost,95.74,92.45,95.6,91.38,2.464
+XGBoost,Naveen Prasad M,Gradient Boost,95.27,92.18,95.12,89.46,0.478
+Gradient Boosting,Shreya Hegde,Sequential Ensemble,94.79,90.81,94.65,88.94,7.202
+Random Forest,Naveen Prasad M,Bagging Ensemble,94.79,90.52,94.59,88.32,0.573
+Decision Tree (CART),Shreya Hegde,Tree-based,92.59,87.81,92.45,85.6,0.027
+Multi-layer Perceptron,Naveen Prasad M,Neural Network,92.27,85.63,92.06,83.7,5.841
+SVM (RBF Kernel),Naveen Prasad M,Kernel Method,91.01,82.09,90.48,78.06,0.09
+Linear SVM,Shreya Hegde,Linear Max-Margin,89.91,81.24,89.95,80.08,0.053
+Logistic Regression,Naveen Prasad M,Probabilistic Linear,89.43,80.15,89.37,77.8,0.053
+K-Nearest Neighbors,Shreya Hegde,Instance-based,88.8,78.28,88.29,74.2,0.219
