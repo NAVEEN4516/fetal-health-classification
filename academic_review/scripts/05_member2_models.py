@@ -37,7 +37,8 @@ print("Libraries imported successfully!")
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data" / "processed"
+REPO_ROOT = BASE_DIR.parent
+DATA_DIR = REPO_ROOT / "data" / "processed" if (REPO_ROOT / "data" / "processed").exists() else BASE_DIR / "data" / "processed"
 
 X_train = np.load(DATA_DIR / "X_train.npy")
 X_test = np.load(DATA_DIR / "X_test.npy")
@@ -470,5 +471,6 @@ final_results['Test Accuracy (%)'] = (
     final_results['Test Accuracy'] * 100
 ).round(2)
 
-final_results
+print("\n=== FINAL RESULTS SUMMARY (MEMBER 2) ===")
+print(final_results.to_string())
 

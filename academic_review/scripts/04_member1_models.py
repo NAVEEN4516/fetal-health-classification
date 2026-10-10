@@ -8,11 +8,17 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 import time
 
+from pathlib import Path
+
 # 1. Load preprocessed data
-X_train = np.load('data/processed/X_train.npy')
-X_test = np.load('data/processed/X_test.npy')
-y_train = np.load('data/processed/y_train.npy')
-y_test = np.load('data/processed/y_test.npy')
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent.parent
+DATA_DIR = REPO_ROOT / "data" / "processed" if (REPO_ROOT / "data" / "processed").exists() else SCRIPT_DIR.parent / "data" / "processed"
+
+X_train = np.load(DATA_DIR / 'X_train.npy')
+X_test = np.load(DATA_DIR / 'X_test.npy')
+y_train = np.load(DATA_DIR / 'y_train.npy')
+y_test = np.load(DATA_DIR / 'y_test.npy')
 
 # Adjust y for XGBoost (expects labels 0, 1, 2 instead of 1, 2, 3)
 y_train_xgb = y_train - 1

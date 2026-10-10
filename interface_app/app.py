@@ -214,50 +214,11 @@ feature_names = model_obj["feature_names"]
 st.caption("Load a reference profile — all input values update instantly:")
 _pc1, _pc2, _pc3, _pc4 = st.columns([1.6, 1.6, 1.6, 5])
 with _pc1:
-    if st.button("🟢 Level 1 — Normal", use_container_width=True):
-        _apply_preset("Normal")
-        st.rerun()
+    st.button("🟢 Level 1 — Normal", on_click=_apply_preset, args=("Normal",), use_container_width=True)
 with _pc2:
-    if st.button("🟡 Level 2 — Suspect", use_container_width=True):
-        _apply_preset("Suspect")
-        st.rerun()
+    st.button("🟡 Level 2 — Suspect", on_click=_apply_preset, args=("Suspect",), use_container_width=True)
 with _pc3:
-    if st.button("🔴 Level 3 — Pathological", use_container_width=True):
-        _apply_preset("Pathological")
-        st.rerun()
-
-# ── 3-Way Mix Panel ──────────────────────────────────────────────────────────
-with st.expander("🎚️ Custom Mix — blend all 3 levels by percentage", expanded=False):
-    st.caption("Set how much of each profile to mix. Values are auto-normalised to 100%.")
-    mx1, mx2, mx3 = st.columns(3)
-    with mx1:
-        pct_normal = st.slider("🟢 Normal (%)", 0, 100, 34, 1, key="mix_normal")
-    with mx2:
-        pct_suspect = st.slider("🟡 Suspect (%)", 0, 100, 33, 1, key="mix_suspect")
-    with mx3:
-        pct_path = st.slider("🔴 Pathological (%)", 0, 100, 33, 1, key="mix_pathological")
-
-    total = pct_normal + pct_suspect + pct_path
-    if total == 0:
-        st.warning("All sliders are at 0 — set at least one above 0.")
-    else:
-        w1, w2, w3 = pct_normal / total, pct_suspect / total, pct_path / total
-        actual_total = pct_normal + pct_suspect + pct_path
-        label_color = "green" if actual_total == 100 else "orange"
-        st.markdown(
-            f"<span style='color:{label_color}; font-weight:600;'>Total: {actual_total}% "
-            f"{'✅' if actual_total == 100 else '⚠️ (auto-normalised to 100%)'}</span>",
-            unsafe_allow_html=True
-        )
-        if st.button("⚗️ Apply Mix to Inputs", use_container_width=True, type="secondary"):
-            for feat in feature_names:
-                blended = (
-                    w1 * PRESETS["Normal"][feat]
-                    + w2 * PRESETS["Suspect"][feat]
-                    + w3 * PRESETS["Pathological"][feat]
-                )
-                st.session_state[f"in_{feat}"] = float(blended)
-            st.rerun()
+    st.button("🔴 Level 3 — Pathological", on_click=_apply_preset, args=("Pathological",), use_container_width=True)
 
 tab1, tab2, tab3 = st.tabs([
     "💓 1. Fetal Heart Rate & Decelerations",
@@ -269,7 +230,6 @@ def num_input(feature, label, help_text):
     default = float(PRESETS["Normal"][feature])
     st.number_input(
         label,
-        value=float(st.session_state.get(f"in_{feature}", default)),
         format="%.4f" if default < 1 and default > 0 else "%.1f" if default >= 10 else "%.3f",
         help=help_text,
         key=f"in_{feature}"
