@@ -152,8 +152,15 @@ PRESETS = {
 }
 
 # Initialize session state with Normal preset
-if "inputs" not in st.session_state:
-    st.session_state.inputs = PRESETS["Normal"].copy()
+def _apply_preset(name: str):
+    """Write preset values directly into Streamlit widget-state keys so
+    number_input widgets reflect the new values on the next render."""
+    for feature, val in PRESETS[name].items():
+        st.session_state[f"in_{feature}"] = float(val)
+
+# Initialise widget keys with Normal preset on first load
+if f"in_baseline value" not in st.session_state:
+    _apply_preset("Normal")
 
 # -----------------------------------------------------------------------------
 # TOP HEADER BAR WITH HELP MENU BUTTON
@@ -208,15 +215,15 @@ st.caption("Load a reference profile — all input values update instantly:")
 _pc1, _pc2, _pc3, _pc4 = st.columns([1.6, 1.6, 1.6, 5])
 with _pc1:
     if st.button("🟢 Level 1 — Normal", use_container_width=True):
-        st.session_state.inputs = PRESETS["Normal"].copy()
+        _apply_preset("Normal")
         st.rerun()
 with _pc2:
     if st.button("🟡 Level 2 — Suspect", use_container_width=True):
-        st.session_state.inputs = PRESETS["Suspect"].copy()
+        _apply_preset("Suspect")
         st.rerun()
 with _pc3:
     if st.button("🔴 Level 3 — Pathological", use_container_width=True):
-        st.session_state.inputs = PRESETS["Pathological"].copy()
+        _apply_preset("Pathological")
         st.rerun()
 
 tab1, tab2, tab3 = st.tabs([
@@ -226,11 +233,11 @@ tab1, tab2, tab3 = st.tabs([
 ])
 
 def num_input(feature, label, help_text):
-    val = float(st.session_state.inputs.get(feature, PRESETS["Normal"][feature]))
-    st.session_state.inputs[feature] = st.number_input(
+    default = float(PRESETS["Normal"][feature])
+    st.number_input(
         label,
-        value=val,
-        format="%.4f" if val < 1 and val > 0 else "%.1f" if val >= 10 else "%.3f",
+        value=float(st.session_state.get(f"in_{feature}", default)),
+        format="%.4f" if default < 1 and default > 0 else "%.1f" if default >= 10 else "%.3f",
         help=help_text,
         key=f"in_{feature}"
     )
@@ -282,7 +289,9 @@ predict_clicked = st.button("🔍 Run Clinical Diagnostic Triage", type="primary
 # PREDICTION & CLINICAL TRIAGE LOGIC
 # -----------------------------------------------------------------------------
 if predict_clicked:
-    input_df = pd.DataFrame([st.session_state.inputs], columns=feature_names)
+    # Collect values from widget state keys
+    inp = {f: float(st.session_state.get(f"in_{f}", PRESETS["Normal"][f])) for f in feature_names}
+    input_df = pd.DataFrame([inp], columns=feature_names)
 
     # Model inference — LightGBM (primary model)
     clf = model_obj["model"]
@@ -333,7 +342,6 @@ if predict_clicked:
         st.write("")
         st.write("**⚠️ Physiological Biomarker Flags:**")
         anomalies = []
-        inp = st.session_state.inputs
         if inp["baseline value"] > 160:
             anomalies.append(f"Baseline FHR elevated ({inp['baseline value']} bpm > 160 bpm) — Tachycardia")
         elif inp["baseline value"] < 110:
