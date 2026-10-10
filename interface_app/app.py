@@ -203,9 +203,25 @@ st.subheader("📝 Enter Cardiotocogram (CTG) Patient Measurements")
 
 feature_names = model_obj["feature_names"]
 
+# Compact inline preset loader
+st.caption("Load a reference profile — all input values update instantly:")
+_pc1, _pc2, _pc3, _pc4 = st.columns([1.6, 1.6, 1.6, 5])
+with _pc1:
+    if st.button("🟢 Level 1 — Normal", use_container_width=True):
+        st.session_state.inputs = PRESETS["Normal"].copy()
+        st.rerun()
+with _pc2:
+    if st.button("🟡 Level 2 — Suspect", use_container_width=True):
+        st.session_state.inputs = PRESETS["Suspect"].copy()
+        st.rerun()
+with _pc3:
+    if st.button("🔴 Level 3 — Pathological", use_container_width=True):
+        st.session_state.inputs = PRESETS["Pathological"].copy()
+        st.rerun()
+
 tab1, tab2, tab3 = st.tabs([
-    "💓 1. Fetal Heart Rate & Decelerations", 
-    "📈 2. Uterine Activity & Variability", 
+    "💓 1. Fetal Heart Rate & Decelerations",
+    "📈 2. Uterine Activity & Variability",
     "📊 3. FHR Histogram Morphometrics"
 ])
 
