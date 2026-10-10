@@ -9,7 +9,7 @@ st.set_page_config(
     page_title="Fetal Health AI — Clinical Decision Support",
     page_icon="🩺",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Custom Styling for Clinical Dashboard
@@ -61,23 +61,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 BASE_DIR = Path(__file__).resolve().parent
-LGBM_PATH = BASE_DIR / "models" / "fetal_health_model.joblib"
-XGB_PATH = BASE_DIR / "models" / "xgboost_model.joblib"
+MODEL_PATH = BASE_DIR / "models" / "fetal_health_model.joblib"
 
 @st.cache_resource
-def load_engines():
-    engines = {}
-    if LGBM_PATH.exists():
-        engines["LightGBM"] = joblib.load(LGBM_PATH)
-    if XGB_PATH.exists():
-        engines["XGBoost"] = joblib.load(XGB_PATH)
-    return engines
+def load_model():
+    if not MODEL_PATH.exists():
+        return None
+    return joblib.load(MODEL_PATH)
 
-engines = load_engines()
+model_obj = load_model()
 
-if not engines:
-    st.error("No serialized models found in `models/`!")
-    st.info("Run `python train_models.py` to serialize the inference engines.")
+if model_obj is None:
+    st.error("Model file not found in `models/fetal_health_model.joblib`!")
+    st.info("Run `python train_models.py` to serialise the model.")
     st.stop()
 
 # -----------------------------------------------------------------------------
@@ -201,52 +197,11 @@ with col_h2:
 st.caption("⚠️ **Educational & Research Prototype Only:** This system is trained on the Ayres-de-Campos et al. benchmark dataset. Not intended as an independent diagnostic medical device.")
 
 # -----------------------------------------------------------------------------
-# SIDEBAR CONTROLS
-# -----------------------------------------------------------------------------
-with st.sidebar:
-    st.header("⚙️ System Configuration")
-    
-    # Engine Selection
-    engine_choice = st.selectbox(
-        "🧠 Select Inference Engine",
-        options=["LightGBM (Shreya Hegde — 95.89%)", "XGBoost (Naveen Prasad M — 95.27%)", "Dual-Engine Consensus"],
-        index=0,
-        help="Select which high-performance gradient boosting architecture performs the classification."
-    )
-    
-    st.divider()
-    st.markdown("### 🏥 Quick Patient Case Loaders")
-    st.caption("Load verified test profiles to demonstrate instant triage:")
-    
-    col_p1, col_p2, col_p3 = st.columns(3)
-    with col_p1:
-        if st.button("🟢 Normal", use_container_width=True):
-            st.session_state.inputs = PRESETS["Normal"].copy()
-            st.rerun()
-    with col_p2:
-        if st.button("🟡 Suspect", use_container_width=True):
-            st.session_state.inputs = PRESETS["Suspect"].copy()
-            st.rerun()
-    with col_p3:
-        if st.button("🔴 Critical", use_container_width=True):
-            st.session_state.inputs = PRESETS["Pathological"].copy()
-            st.rerun()
-
-    st.divider()
-    with st.expander("📖 Medical Reference Guide", expanded=False):
-        st.markdown("""
-        **CTG Interpretation Rubric:**
-        * **Normal:** Baseline 110-160, STV > 1.0, 0 prolonged decels.
-        * **Suspect:** Baseline > 160 or mild decels with borderline variability.
-        * **Pathological:** Prolonged decels > 0.003, STV < 0.8, abnormal LTV > 50%.
-        """)
-
-# -----------------------------------------------------------------------------
 # INPUT FEATURES FORM
 # -----------------------------------------------------------------------------
 st.subheader("📝 Enter Cardiotocogram (CTG) Patient Measurements")
 
-feature_names = engines["LightGBM"]["feature_names"]
+feature_names = model_obj["feature_names"]
 
 tab1, tab2, tab3 = st.tabs([
     "💓 1. Fetal Heart Rate & Decelerations", 
@@ -312,31 +267,17 @@ predict_clicked = st.button("🔍 Run Clinical Diagnostic Triage", type="primary
 # -----------------------------------------------------------------------------
 if predict_clicked:
     input_df = pd.DataFrame([st.session_state.inputs], columns=feature_names)
-    
-    # Model inference
-    if "LightGBM" in engine_choice:
-        model_obj = engines["LightGBM"]["model"]
-        pred = int(model_obj.predict(input_df)[0])
-        probas = model_obj.predict_proba(input_df)[0]
-        used_engine = "LightGBM (Shreya Hegde — 95.89% Accuracy)"
-    elif "XGBoost" in engine_choice:
-        model_obj = engines["XGBoost"]["model"]
-        pred = int(model_obj.predict(input_df)[0]) + 1
-        probas = model_obj.predict_proba(input_df)[0]
-        used_engine = "XGBoost (Naveen Prasad M — 95.27% Accuracy)"
-    else: # Consensus
-        p_lgb = engines["LightGBM"]["model"].predict_proba(input_df)[0]
-        p_xgb = engines["XGBoost"]["model"].predict_proba(input_df)[0]
-        probas = (p_lgb + p_xgb) / 2.0
-        pred = int(np.argmax(probas)) + 1
-        used_engine = "Ensemble Consensus (Blended LightGBM + XGBoost)"
+
+    # Model inference — LightGBM (primary model)
+    clf = model_obj["model"]
+    pred = int(clf.predict(input_df)[0])
+    probas = clf.predict_proba(input_df)[0]
 
     class_names = {1: "Normal", 2: "Suspect", 3: "Pathological"}
     result_name = class_names[pred]
 
     st.divider()
     st.subheader("🩺 Diagnostic Triage & Clinical Decision Support")
-    st.caption(f"Evaluated via **{used_engine}**")
 
     res_col1, res_col2 = st.columns([2, 1.2])
 
